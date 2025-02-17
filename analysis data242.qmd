@@ -1,0 +1,475 @@
+---
+title: "Untitled"
+format: html
+editor: visual
+---
+
+## Quarto
+
+```{r}
+#| label: setup
+#| include: false
+
+# Put your libraries and dataset loading code here.
+library(ggplot2)
+library(dplyr)
+library(tidyverse)
+library(gridExtra)
+library(knitr)
+library(kableExtra)
+library(broom)
+library(car)
+
+#|echo = FALSE
+#|warning = FALSE
+#|message = FALSE
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+
+```
+
+```{r}
+data=read.csv("dataset242.csv")
+data$x1000class_arrive <- data$x1000class_arrive %>%
+  as.numeric() %>%  # 先转换为数值型
+  sprintf("%04d", .) %>%  # 此时可以用 %04d 格式化
+  as.character() %>%  # 再转换回字符型以便后续操作
+  {paste0(substr(., 1, 2), ":", substr(., 3, 4))}%>%
+  na.omit() %>%
+  as.character() %>%
+  {paste0("2000-01-01 ",., ":00")} %>%  # 给时间添加日期和秒，使其能被转换为POSIXct
+  as.POSIXct(format = "%Y-%m-%d %H:%M:%S")
+
+data$x1000classlike_no_arrive <- data$x1000classlike_no_arrive %>%
+  as.numeric() %>%  # 先转换为数值型
+  sprintf("%04d", .) %>%  # 此时可以用 %04d 格式化
+  as.character() %>%  # 再转换回字符型以便后续操作
+  {paste0(substr(., 1, 2), ":", substr(., 3, 4))}%>%
+  na.omit() %>%
+  as.character() %>%
+  {paste0("2000-01-01 ",., ":00")} %>%  # 给时间添加日期和秒，使其能被转换为POSIXct
+  as.POSIXct(format = "%Y-%m-%d %H:%M:%S")
+
+data$x1000classlike_yes_arrive <- data$x1000classlike_yes_arrive %>%
+  as.numeric() %>%  # 先转换为数值型
+  sprintf("%04d", .) %>%  # 此时可以用 %04d 格式化
+  as.character() %>%  # 再转换回字符型以便后续操作
+  {paste0(substr(., 1, 2), ":", substr(., 3, 4))}%>%
+  na.omit() %>%
+  as.character() %>%
+  {paste0("2000-01-01 ",., ":00")} %>%  # 给时间添加日期和秒，使其能被转换为POSIXct
+  as.POSIXct(format = "%Y-%m-%d %H:%M:%S")
+
+data$x1230friend_arrive <- data$x1230friend_arrive %>%
+  as.numeric() %>%  # 先转换为数值型
+  sprintf("%04d", .) %>%  # 此时可以用 %04d 格式化
+  as.character() %>%  # 再转换回字符型以便后续操作
+  {paste0(substr(., 1, 2), ":", substr(., 3, 4))}%>%
+  na.omit() %>%
+  as.character() %>%
+  {paste0("2000-01-01 ",., ":00")} %>%  # 给时间添加日期和秒，使其能被转换为POSIXct
+  as.POSIXct(format = "%Y-%m-%d %H:%M:%S")
+
+data$x1000meeting_arrive <- data$x1000meeting_arrive %>%
+  as.numeric() %>%  # 先转换为数值型
+  sprintf("%04d", .) %>%  # 此时可以用 %04d 格式化
+  as.character() %>%  # 再转换回字符型以便后续操作
+  {paste0(substr(., 1, 2), ":", substr(., 3, 4))}%>%
+  na.omit() %>%
+  as.character() %>%
+  {paste0("2000-01-01 ",., ":00")} %>%  # 给时间添加日期和秒，使其能被转换为POSIXct
+  as.POSIXct(format = "%Y-%m-%d %H:%M:%S")
+
+data$x1000meeting_late <- data$x1000meeting_late %>%
+  as.numeric() %>%  # 先转换为数值型
+  sprintf("%04d", .) %>%  # 此时可以用 %04d 格式化
+  as.character() %>%  # 再转换回字符型以便后续操作
+  {paste0(substr(., 1, 2), ":", substr(., 3, 4))}%>%
+  na.omit() %>%
+  as.character() %>%
+  {paste0("2000-01-01 ",., ":00")} %>%  # 给时间添加日期和秒，使其能被转换为POSIXct
+  as.POSIXct(format = "%Y-%m-%d %H:%M:%S")
+
+data$xboss1000meeting_arrive <- data$xboss1000meeting_arrive %>%
+  as.numeric() %>%  # 先转换为数值型
+  sprintf("%04d", .) %>%  # 此时可以用 %04d 格式化
+  as.character() %>%  # 再转换回字符型以便后续操作
+  {paste0(substr(., 1, 2), ":", substr(., 3, 4))}%>%
+  na.omit() %>%
+  as.character() %>%
+  {paste0("2000-01-01 ",., ":00")} %>%  # 给时间添加日期和秒，使其能被转换为POSIXct
+  as.POSIXct(format = "%Y-%m-%d %H:%M:%S")
+
+data$xboss1000meeting_late <- data$xboss1000meeting_late %>%
+  as.numeric() %>%  # 先转换为数值型
+  sprintf("%04d", .) %>%  # 此时可以用 %04d 格式化
+  as.character() %>%  # 再转换回字符型以便后续操作
+  {paste0(substr(., 1, 2), ":", substr(., 3, 4))}%>%
+  na.omit() %>%
+  as.character() %>%
+  {paste0("2000-01-01 ",., ":00")} %>%  # 给时间添加日期和秒，使其能被转换为POSIXct
+  as.POSIXct(format = "%Y-%m-%d %H:%M:%S")
+
+data$xparent1900dinner_arrive <- data$xparent1900dinner_arrive %>%
+  as.numeric() %>%  # 先转换为数值型
+  sprintf("%04d", .) %>%  # 此时可以用 %04d 格式化
+  as.character() %>%  # 再转换回字符型以便后续操作
+  {paste0(substr(., 1, 2), ":", substr(., 3, 4))}%>%
+  na.omit() %>%
+  as.character() %>%
+  {paste0("2000-01-01 ",., ":00")} %>%  # 给时间添加日期和秒，使其能被转换为POSIXct
+  as.POSIXct(format = "%Y-%m-%d %H:%M:%S")
+
+data$xparent1900dinner_late <- data$xparent1900dinner_late %>%
+  as.numeric() %>%  # 先转换为数值型
+  sprintf("%04d", .) %>%  # 此时可以用 %04d 格式化
+  as.character() %>%  # 再转换回字符型以便后续操作
+  {paste0(substr(., 1, 2), ":", substr(., 3, 4))}%>%
+  na.omit() %>%
+  as.character() %>%
+  {paste0("2000-01-01 ",., ":00")} %>%  # 给时间添加日期和秒，使其能被转换为POSIXct
+  as.POSIXct(format = "%Y-%m-%d %H:%M:%S")
+
+data$xchildren1900dinner_arrive <- data$xchildren1900dinner_arrive %>%
+  as.numeric() %>%  # 先转换为数值型
+  sprintf("%04d", .) %>%  # 此时可以用 %04d 格式化
+  as.character() %>%  # 再转换回字符型以便后续操作
+  {paste0(substr(., 1, 2), ":", substr(., 3, 4))}%>%
+  na.omit() %>%
+  as.character() %>%
+  {paste0("2000-01-01 ",., ":00")} %>%  # 给时间添加日期和秒，使其能被转换为POSIXct
+  as.POSIXct(format = "%Y-%m-%d %H:%M:%S")
+
+data$xchildren1900dinner_late <- data$xchildren1900dinner_late %>%
+  as.numeric() %>%  # 先转换为数值型
+  sprintf("%04d", .) %>%  # 此时可以用 %04d 格式化
+  as.character() %>%  # 再转换回字符型以便后续操作
+  {paste0(substr(., 1, 2), ":", substr(., 3, 4))}%>%
+  na.omit() %>%
+  as.character() %>%
+  {paste0("2000-01-01 ",., ":00")} %>%  # 给时间添加日期和秒，使其能被转换为POSIXct
+  as.POSIXct(format = "%Y-%m-%d %H:%M:%S")
+
+#friend meeting 1230
+base_time <- as.POSIXct("2000-01-01 12:30:00")
+data$xfriend_late <- base_time + data$xfriend_late * 60
+
+#xgrandparent1900dinner_late
+base_time2 <- as.POSIXct("2000-01-01 19:00:00")
+data$xgrandparent1900dinner_late <- base_time2+data$xgrandparent1900dinner_late*60
+```
+
+```{r}
+summary(data)
+```
+
+```{r}
+# 这一份是关于课程数据的
+# 将宽数据转换为长数据
+data_long <- data %>%
+  pivot_longer(
+    cols = c(x1000class_arrive, x1000classlike_no_arrive, x1000classlike_yes_arrive),
+    names_to = "category",
+    values_to = "time"
+  )
+
+# 绘制合并后的箱线图
+ggplot(data_long, aes(x = category, y = time)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(
+    title = "Time distribution boxplot",
+    y = "Time",
+    x = "Type of class"
+  ) +
+  scale_y_datetime(date_labels = "%H:%M") +          # 时间格式
+  scale_x_discrete(                                  # 自定义x轴标签
+    labels = c(
+      "x1000class_arrive" = "All the class",
+      "x1000classlike_no_arrive" = "Boring class",
+      "x1000classlike_yes_arrive" = "Interesting class"
+    )
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) + # 旋转x轴标签
+  # 添加表示 10:00 的水平线
+  geom_hline(yintercept = as.POSIXct("2000-01-01 10:00:00"), linetype = "dashed", color = "red") +
+  # 添加文本标注
+  annotate("text", x = 2, y = as.POSIXct("2000-01-01 10:00:00"), 
+           label = "Appointed time: 10:00", vjust = -0.5, color = "red")
+
+```
+
+```{r}
+#这是关于gender信息的
+data$age_range = as.factor(data$age)
+ggplot(data,aes(x=age))+
+  geom_histogram(stat="count")+
+  labs(
+    title="the age range of respondents")
+```
+
+```{r}
+# 这一份是关于会议时间的
+# 将宽数据转换为长数据
+data_long <- data %>%
+  pivot_longer(
+    cols = c(x1000meeting_arrive, x1000meeting_late, xboss1000meeting_arrive, xboss1000meeting_late),
+    names_to = "category",
+    values_to = "time"
+  )
+
+# 绘制合并后的箱线图
+ggplot(data_long, aes(x = category, y = time)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(
+    title = "Time distribution boxplot",
+    y = "Time",
+    x = "employee/boss 's arrive time range"
+  ) +
+  scale_y_datetime(date_labels = "%H:%M") +          # 时间格式
+  scale_x_discrete(                                  # 自定义x轴标签
+    labels = c(
+      "x1000meeting_arrive" = "employee arrive",
+      "x1000meeting_late" = "employee late",
+      "xboss1000meeting_arrive" = "boss arrive",
+      "xboss1000meeting_late" = "boss late"
+    )
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  + # 旋转x轴标签
+  # 添加表示 10:00 的水平线
+  geom_hline(yintercept = as.POSIXct("2000-01-01 10:00:00"), linetype = "dashed", color = "red") +
+  # 添加文本标注
+  annotate("text", x = 2, y = as.POSIXct("2000-01-01 10:00:00"), 
+           label = "Appointed time: 10:00", vjust = -0.5, color = "red")
+```
+
+```{r}
+# 这一份是关于会议时间的
+# 将宽数据转换为长数据
+data_long <- data %>%
+  pivot_longer(
+    cols = c(xparent1900dinner_arrive,xparent1900dinner_late,xchildren1900dinner_arrive,xchildren1900dinner_late,xgrandparent1900dinner_late),
+    names_to = "category",
+    values_to = "time"
+  )
+
+# 绘制合并后的箱线图
+ggplot(data_long, aes(x = category, y = time)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(
+    title = "Time distribution boxplot",
+    y = "Time",
+    x = "parent/children's arrive time range"
+  ) +
+  scale_y_datetime(date_labels = "%H:%M") +          # 时间格式
+  scale_x_discrete(                                  # 自定义x轴标签
+    labels = c(
+      "xparent1900dinner_arrive" = "parent arrive time",
+      "xparent1900dinner_late" = "parent late time",
+      "xchildren1900dinner_arrive" = "children arrive time",
+      "xchildren1900dinner_late" = "children late time",
+      "xgrandparent1900dinner_late" = "grandparents late time"
+    )
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  + # 旋转x轴标签
+  # 添加表示 10:00 的水平线
+  geom_hline(yintercept = as.POSIXct("2000-01-01 19:00:00"), linetype = "dashed", color = "red") +
+  # 添加文本标注
+  annotate("text", x = 2, y = as.POSIXct("2000-01-01 19:00:00"), 
+           label = "Appointed time: 19:00", vjust = -0.5, color = "red")
+```
+
+```{r}
+base_time <- as.POSIXct("2000-01-01 19:00:00")
+# 按 xparent1900dinner_arrive 排序
+data <- data[order(data$xparent1900dinner_arrive), ]
+# 添加一个新的列来表示不同的人（用行号表示）
+data$person <- 1:nrow(data)
+# 将时间转换为 HHMM 格式
+data$arrive_time <- format(data$xparent1900dinner_arrive, "%H%M")
+data$late_time <- format(data$xparent1900dinner_late, "%H%M")
+# 将时间转换为数值型以便绘图
+data$arrive_time_num <- as.numeric(data$arrive_time)
+data$late_time_num <- as.numeric(data$late_time)
+# 为了方便连线，把数据转换为长格式
+library(tidyr)
+data_long <- pivot_longer(data, 
+                          cols = c(arrive_time_num, late_time_num), 
+                          names_to = "time_type", 
+                          values_to = "time_value")
+# 绘制散点图并连线
+ggplot() +
+  # 绘制连线
+  geom_line(data = data_long, aes(x = person, y = time_value, group = person), color = "gray") +
+  # 绘制到达时间的散点
+  geom_point(data = data, aes(x = person, y = arrive_time_num, color = "Arrive"), size = 3) +
+  # 绘制迟到时间的散点
+  geom_point(data = data, aes(x = person, y = late_time_num, color = "Late"), size = 3) +
+  # 设置 x 轴标签
+  labs(x = "Parent", y = "Time (HHMM)") +
+  # 设置图例标题
+  scale_color_manual(name = "Time Type", values = c("Arrive" = "blue", "Late" = "red")) +
+  # 设置主题
+  theme_minimal()+
+  # 添加表示 19:00 的水平线
+  geom_hline(yintercept = 1900, linetype = "dashed", color = "black") +
+  # 添加标注文本
+  annotate("text", x = max(data$person) * 0.5, y = 1900, label = "Appointed time: 19:00", vjust = -5, color = "black")
+
+#接下来是childrenside
+# 按 xparent1900dinner_arrive 排序
+data <- data[order(data$xparent1900dinner_arrive), ]
+# 添加一个新的列来表示不同的人（用行号表示）
+data$person <- 1:nrow(data)
+# 将时间转换为 HHMM 格式
+data$arrive_time <- format(data$xchildren1900dinner_arrive, "%H%M")
+data$late_time <- format(data$xchildren1900dinner_late, "%H%M")
+# 将时间转换为数值型以便绘图
+data$arrive_time_num <- as.numeric(data$arrive_time)
+data$late_time_num <- as.numeric(data$late_time)
+# 为了方便连线，把数据转换为长格式
+library(tidyr)
+data_long <- pivot_longer(data, 
+                          cols = c(arrive_time_num, late_time_num), 
+                          names_to = "time_type", 
+                          values_to = "time_value")
+# 绘制散点图并连线
+ggplot() +
+  # 绘制连线
+  geom_line(data = data_long, aes(x = person, y = time_value, group = person), color = "gray") +
+  # 绘制到达时间的散点
+  geom_point(data = data, aes(x = person, y = arrive_time_num, color = "Arrive"), size = 3) +
+  # 绘制迟到时间的散点
+  geom_point(data = data, aes(x = person, y = late_time_num, color = "Late"), size = 3) +
+  # 设置 x 轴标签
+  labs(x = "Children", y = "Time (HHMM)") +
+  # 设置图例标题
+  scale_color_manual(name = "Time Type", values = c("Arrive" = "blue", "Late" = "red")) +
+  # 设置主题
+  theme_minimal()+
+  # 添加表示 19:00 的水平线
+  geom_hline(yintercept = 1900, linetype = "dashed", color = "black") +
+  # 添加标注文本
+  annotate("text", x = max(data$person) * 0.5, y = 1900, label = "Appointed time: 19:00", vjust = -5, color = "black")
+```
+
+```{r}
+base_time <- as.POSIXct("2000-01-01 12:30:00")
+# 将宽数据转换为长数据
+data_long <- data %>%
+  pivot_longer(
+    cols = c(x1230friend_arrive, xfriend_late),
+    names_to = "category",
+    values_to = "time"
+  )
+
+# 绘制合并后的箱线图
+ggplot(data_long, aes(x = category, y = time)) +
+  geom_boxplot(fill = "lightgreen") +
+  labs(
+    title = "Time distribution boxplot",
+    y = "Time",
+    x = "Friend's arrive time range"
+  ) +
+  scale_y_datetime(date_labels = "%H:%M") +          # 时间格式
+  scale_x_discrete(                                  # 自定义 x 轴标签
+    labels = c(
+      "x1230friend_arrive" = "Friend arrive time",
+      "xfriend_late" = "Friend late time"
+    )
+  ) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))  + # 旋转 x 轴标签
+  # 添加水平参考线表示约定时间
+  geom_hline(yintercept = base_time, linetype = "dashed", color = "red") +
+  # 添加文本标注
+  annotate("text", x = 1.5, y = base_time, label = "Appointed time: 12:30", vjust = -0.5, color = "red")
+```
+
+```{r}
+# 假设 data 是已经存在的数据框
+# 对数据按照 x1230friend_arrive 进行排序
+data <- data[order(data$x1230friend_arrive), ]
+
+# 添加一个新的列来表示不同的受访者（用行号表示）
+data$respondent <- 1:nrow(data)
+
+# 将宽数据转换为长数据
+data_long <- data %>%
+  pivot_longer(
+    cols = c(x1230friend_arrive, xfriend_late),
+    names_to = "category",
+    values_to = "time"
+  )
+
+# 定义约定时间
+base_time <- as.POSIXct("2000-01-01 12:30:00")
+
+# 绘制散点图并添加连接线段
+ggplot() +
+  # 绘制连接同一个受访者两个时间点的垂直线
+  geom_segment(data = data, aes(x = respondent, xend = respondent, y = x1230friend_arrive, yend = xfriend_late), color = "gray") +
+  # 绘制 x1230friend_arrive 的散点
+  geom_point(data = data, aes(x = respondent, y = x1230friend_arrive, color = "Friend arrive time"), size = 3) +
+  # 绘制 xfriend_late 的散点
+  geom_point(data = data, aes(x = respondent, y = xfriend_late, color = "Friend late time"), size = 3) +
+  # 设置标题和坐标轴标签
+  labs(
+    title = "Time distribution scatterplot",
+    y = "Time",
+    x = "Respondent (sorted by Friend arrive time)"
+  ) +
+  # 设置 y 轴时间格式
+  scale_y_datetime(date_labels = "%H:%M") +
+  # 设置图例
+  scale_color_manual(name = "Time Type", values = c("Friend arrive time" = "blue", "Friend late time" = "red")) +
+  # 添加水平参考线表示约定时间
+  geom_hline(yintercept = base_time, linetype = "dashed", color = "red") +
+  # 添加文本标注
+  annotate("text", x = median(data$respondent), y = base_time, label = "Appointed time: 12:30", vjust = -0.5, color = "black") +
+  theme_minimal()
+```
+
+```{r}
+# 假设数据已经存在于 data 数据框中
+# 筛选出 xplanelate_yesno, xtrainlate_yesno, xehaillate_yesno 中选 1 的数据
+plane_data <- data %>%
+  filter(xplanelate_yesno == 1) %>%
+  filter(xplane_arrive < 150) %>%
+  select(xplane_arrive) %>%
+  mutate(type = "Plane") %>%
+  rename(time = xplane_arrive)
+
+train_data <- data %>%
+  filter(xtrainlate_yesno == 1) %>%
+  select(xtrain_arrive) %>%
+  mutate(type = "Train") %>%
+  rename(time = xtrain_arrive)
+
+# 处理网约车数据
+ehail_data <- data %>%
+  filter(xehaillate_yesno == 1) %>%
+  select(xehail_arrive) %>%
+  mutate(
+    type = "E - hail",
+    time = 5 - as.numeric(xehail_arrive)  # 使用计算公式
+  )
+ggplot(ehail_data,aes(y=time))+geom_boxplot()
+
+# 合并数据
+combined_data <- bind_rows(plane_data, train_data, ehail_data)
+
+# 绘制箱线图
+ggplot(combined_data, aes(x = type, y = time)) +
+  geom_boxplot(fill = "lightblue") +
+  labs(
+    title = "Arrival Time Boxplot for Those Who Get Anxious When Late",
+    x = "Transportation Type",
+    y = "Minutes Before Arrival"
+  ) +
+  # 添加黑色虚线表示预定时间线
+  geom_hline(yintercept = 0, linetype = "dashed", color = "black") +
+  # 添加箭头和文字标注提前/迟到方向
+  annotate("segment", x = 1, xend = 1, y = 2, yend = -2, arrow = arrow(length = unit(0.3, "cm"))) +
+  annotate("text", x = 1, y = 15, label = "Early") +
+  annotate("text", x = 1, y = -15, label = "Late") +
+  theme_minimal()
+```
